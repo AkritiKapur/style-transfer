@@ -37,9 +37,31 @@ def get_conv_layer(input, filter_height, filter_width, n_input_channels, n_chann
     layer += bias
 
     # Add a relu unit
-    layer = tf.nn.relu(layer)
+    layer = add_relu(layer)
 
     return layer, weight
+
+
+def get_fc_layer(input, n_input, n_output):
+
+    # Set weight
+    weight = get_weights([n_input, n_output])
+
+    # Set bias
+    bias = get_bias(n_output)
+
+    layer = tf.matmul(input, weight)
+
+    # Add bias
+    layer += bias
+
+    layer = add_relu(layer)
+
+    return layer
+
+
+def add_relu(layer):
+    return tf.nn.relu(layer)
 
 
 def get_res_layer():
