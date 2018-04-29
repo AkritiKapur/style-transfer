@@ -11,7 +11,7 @@ def get_bias(length):
     return tf.Variable(tf.constant(0.05, shape=[length]))
 
 
-def get_conv_layer(input, filter_height, filter_width, n_input_channels, n_channels, stride=[1, 1, 1, 1]):
+def get_conv_layer(input, filter_height, filter_width, n_input_channels, n_channels, stride=[1, 1, 1, 1], relu=True):
     """
     Creates a conv layer (tensor variable)
     :param input: Input from the previous layer
@@ -37,7 +37,8 @@ def get_conv_layer(input, filter_height, filter_width, n_input_channels, n_chann
     layer += bias
 
     # Add a relu unit
-    layer = add_relu(layer)
+    if relu:
+        layer = add_relu(layer)
 
     return layer, weight
 
@@ -64,9 +65,22 @@ def add_relu(layer):
     return tf.nn.relu(layer)
 
 
-def get_res_layer():
+def get_res_layer(conv, filter_width, filter_height, n_filters, n_input_channels):
     """
-    Creates a residual layer
-    :return:
+    Creates a residual (tensor variable)
+    :param input: Input from the previous layer
+    :param filter_height: Conv filter height
+    :param filter_width: Conv filter width
+    :param n_channels: Number of filters in the conv layer (current layer)
+    :param n_input_channels: number of channels in the input layer (previous layer)
+    :param stride:
+    :return: Conv layer (Tensor) and filter (Tensor)
     """
-    pass
+    temp = get_conv_layer(input=conv, filter_width=filter_width,
+                          filter_height=filter_height, n_channels=n_filters, n_input_channels=n_input_channels)
+
+    layer = temp + get_conv_layer(input=temp, filter_width=filter_width,
+                                  filter_height=filter_height, n_channels=n_filters,
+                                  n_input_channels=n_input_channels, relu=False)
+
+    return layer
