@@ -9,6 +9,21 @@ from vgg19 import VGG, preprocess
 VGG_PATH  = './imagenet-vgg-19-weights.npz'
 
 
+def get_np_gram(t):
+    shape = t.shape
+
+    num_channels = int(shape[3])
+
+    # flatten the image array for all channels
+    # Necessarily normalizes the matrix
+    matrix = np.reshape(t, (-1, num_channels))
+
+    # Multiply the transpose of the matrix with itself to get gram matrix
+    gram_matrix = np.matmul(matrix.T, matrix)
+
+    return gram_matrix
+
+
 def style_transfer(content_image, style_image,
                    content_layer_ids, style_layer_ids,
                    vgg_path=VGG_PATH,
@@ -37,14 +52,15 @@ def style_transfer(content_image, style_image,
     with tf.Graph().as_default(), tf.Session() as sess:
         style_shape = style_image.shape
         # Create a placeholder for style image
-        style_image = tf.placeholder(tf.float32, shape=style_shape, name='style_image')
+        style = tf.placeholder(tf.float32, shape=style_shape, name='style_image')
 
         # pass style image through 'pretrained VGG-19 network'
-        style_img_preprocess = preprocess(style_image)
+        style_img_preprocess = preprocess(style)
         style_net = model.forward(style_img_preprocess)
 
         # Extract gram matrices for style image, for each layer
-        gram_style = {layer: get_gram_matrix(style_net[layer]) for layer in style_layer_ids}
+        gram_style = {layer: get_np_gram(style_net[layer].eval(feed_dict={style: style_image}))
+                      for layer in style_layer_ids}
 
     # compute perceptual losses
     with tf.Graph().as_default(), tf.Session() as sess:
