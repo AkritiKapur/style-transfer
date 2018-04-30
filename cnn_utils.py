@@ -43,6 +43,39 @@ def get_conv_layer(input, filter_height, filter_width, n_input_channels, n_chann
     return layer, weight
 
 
+def get_deconv_layer(input, filter_height, filter_width, n_output_channels, n_input_channels, stride=[1, 1, 1, 1], relu=True):
+    """
+    Creates a conv layer (tensor variable)
+    :param input: Input from the previous layer
+    :param filter_height: Conv filter height
+    :param filter_width: Conv filter width
+    :param n_channels: Number of filters in the conv layer (current layer)
+    :param n_input_channels: number of channels in the input layer (previous layer)
+    :param stride:
+    :return: Conv layer (Tensor) and filter (Tensor)
+    """
+    shape = [filter_height, filter_width, n_output_channels[3], n_input_channels]
+
+    # Add filters (weights)
+    weight = get_weights(shape)
+
+    # Add bias for each filter
+    bias = get_bias(n_output_channels[3])
+
+    # Add convolution layer
+    # TODO: check padding..
+    layer = tf.nn.conv2d_transpose(value=input, filter=weight, output_shape=n_output_channels,
+                                   strides=stride, padding='SAME')
+
+    layer += bias
+
+    # Add a relu unit
+    if relu:
+        layer = add_relu(layer)
+
+    return layer, weight
+
+
 def get_fc_layer(input, n_input, n_output):
 
     # Set weight
@@ -76,11 +109,13 @@ def get_res_layer(conv, filter_width, filter_height, n_filters, n_input_channels
     :param stride:
     :return: Conv layer (Tensor) and filter (Tensor)
     """
-    temp = get_conv_layer(input=conv, filter_width=filter_width,
-                          filter_height=filter_height, n_channels=n_filters, n_input_channels=n_input_channels)
+    temp, _ = get_conv_layer(input=conv, filter_width=filter_width,
+                             filter_height=filter_height, n_channels=n_filters, n_input_channels=n_input_channels)
 
-    layer = temp + get_conv_layer(input=temp, filter_width=filter_width,
-                                  filter_height=filter_height, n_channels=n_filters,
-                                  n_input_channels=n_input_channels, relu=False)
+    layer, weight = get_conv_layer(input=temp, filter_width=filter_width,
+                   filter_height=filter_height, n_channels=n_filters,
+                   n_input_channels=n_input_channels, relu=False)
+
+    layer = temp + layer
 
     return layer

@@ -1,10 +1,10 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import vgg16
 
 from loss_utils import get_content_loss, get_style_loss, get_variational_loss
 from image_utils import plot_images, view_image, get_image
+from johnson_img_transform import image_transformation_network
 
 
 def style_transfer(content_image, style_image,
@@ -26,6 +26,7 @@ def style_transfer(content_image, style_image,
     :param num_iterations: Number of iterations
     :param step_size: Step size for gradient
     """
+    mixed_image = image_transformation_network(content_image=content_image)
 
     # Create an instance of the VGG16-model. This is done
     # in each call of this function, because we will add
@@ -109,10 +110,8 @@ def style_transfer(content_image, style_image,
     run_list = [gradient, update_adj_content, update_adj_style,
                 update_adj_denoise]
 
-    # The mixed-image is initialized with random noise.
-    # It is the same size as the content-image.
-    # where we first init it
-    mixed_image = np.random.rand(*content_image.shape) + 128
+
+    optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(loss_combined)
 
     for i in range(num_iterations):
         # Create a feed-dict with the mixed-image.
@@ -120,22 +119,23 @@ def style_transfer(content_image, style_image,
 
         # Use TensorFlow to calculate the value of the
         # gradient, as well as updating the adjustment values.
-        grad, adj_content_val, adj_style_val, adj_denoise_val \
-            = session.run(run_list, feed_dict=feed_dict)
+        # grad, adj_content_val, adj_style_val, adj_denoise_val \
+        #     = session.run(run_list, feed_dict=feed_dict)
 
         # Reduce the dimensionality of the gradient.
         # Remove single-dimensional entries from the shape of an array.
-        grad = np.squeeze(grad)
+        # grad = np.squeeze(grad)
 
         # Scale the step-size according to the gradient-values.
         # Ratio of weights:updates
         # akin to learning rate
-        step_size_scaled = step_size / (np.std(grad) + 1e-8)
+        # step_size_scaled = step_size / (np.std(grad) + 1e-8)
 
         # Update the image by following the gradient.
         # gradient descent
-        mixed_image -= grad * step_size_scaled
+        # mixed_image -= grad * step_size_scaled
 
+        mixed_image = session.run(optimizer, feed_dict=feed_dict)
         # Ensure the image has valid pixel-values between 0 and 255.
         # Given an interval, values outside the interval are clipped
         # to the interval edges.
@@ -171,10 +171,10 @@ def style_transfer(content_image, style_image,
 
 if __name__ == '__main__':
     content_filename = 'images/willy_wonka_old.jpg'
-    content_image = get_image(content_filename, max_size=None)
+    content_image = get_image(content_filename, max_size=256)
 
     style_filename = 'images/style5.jpg'
-    style_image = get_image(style_filename, max_size=300)
+    style_image = get_image(style_filename, max_size=256)
     content_layer_ids = [4]
     style_layer_ids = list(range(13))
     img = style_transfer(content_image=content_image,
@@ -186,4 +186,3 @@ if __name__ == '__main__':
                          weight_denoise=0.3,
                          num_iterations=60,
                          step_size=10.0)
-
