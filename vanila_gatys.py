@@ -149,6 +149,13 @@ def style_transfer(content_image, style_image,
         if (i % 10 == 0) or (i == num_iterations - 1):
             print()
             print("Iteration:", i)
+            to_get = [loss_style, loss_content, loss_denoise, loss_combined]
+            test_feed_dict = model.create_feed_dict(image=content_image)
+
+            tup = session.run(to_get, feed_dict=test_feed_dict)
+            _loss_style, _loss_content, _loss_denoise, _loss_combined = tup
+            losses = (_loss_style, _loss_content, _loss_denoise, _loss_combined)
+            print(losses)
 
             # Print adjustment weights for loss-functions.
             # msg = "Weight Adj. for Content: {0:.2e}, Style: {1:.2e}, Denoise: {2:.2e}"
