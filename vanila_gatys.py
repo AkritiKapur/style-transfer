@@ -3,7 +3,7 @@ import tensorflow as tf
 import vgg16
 
 from loss_utils import get_content_loss, get_style_loss, get_variational_loss
-from image_utils import plot_images, view_image, get_image
+from image_utils import plot_images, view_image, get_numpy_image, get_image
 from johnson_img_transform import image_transformation_network
 
 
@@ -110,12 +110,13 @@ def style_transfer(content_image, style_image,
     run_list = [gradient, update_adj_content, update_adj_style,
                 update_adj_denoise]
 
-
     optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(loss_combined)
+    session.run(tf.global_variables_initializer())
+    feed_dict = model.create_feed_dict(image=mixed_image)
 
     for i in range(num_iterations):
         # Create a feed-dict with the mixed-image.
-        feed_dict = model.create_feed_dict(image=mixed_image)
+        feed_dict = model.create_feed_dict(image=content_image)
 
         # Use TensorFlow to calculate the value of the
         # gradient, as well as updating the adjustment values.
@@ -135,11 +136,11 @@ def style_transfer(content_image, style_image,
         # gradient descent
         # mixed_image -= grad * step_size_scaled
 
-        mixed_image = session.run(optimizer, feed_dict=feed_dict)
+        optimizer.run(feed_dict=feed_dict)
         # Ensure the image has valid pixel-values between 0 and 255.
         # Given an interval, values outside the interval are clipped
         # to the interval edges.
-        mixed_image = np.clip(mixed_image, 0.0, 255.0)
+        # mixed_image = np.clip(mixed_image, 0.0, 255.0)
 
         # Print a little progress-indicator.
         print(". ", end="")
@@ -150,14 +151,15 @@ def style_transfer(content_image, style_image,
             print("Iteration:", i)
 
             # Print adjustment weights for loss-functions.
-            msg = "Weight Adj. for Content: {0:.2e}, Style: {1:.2e}, Denoise: {2:.2e}"
-            print(msg.format(adj_content_val, adj_style_val, adj_denoise_val))
+            # msg = "Weight Adj. for Content: {0:.2e}, Style: {1:.2e}, Denoise: {2:.2e}"
+            # print(msg.format(adj_content_val, adj_style_val, adj_denoise_val))
 
             # in larger resolution
             # Plot the content-, style- and mixed-images.
-            plot_images(content_image=content_image,
-                        style_image=style_image,
-                        mixed_image=mixed_image)
+            # plot_images(content_image=content_image,
+            #             style_image=style_image,
+            #             mixed_image=mixed_image)
+            # view_image(mixed_image)
 
     print()
     print("Final image:")
@@ -184,5 +186,5 @@ if __name__ == '__main__':
                          weight_content=1.5,
                          weight_style=10.0,
                          weight_denoise=0.3,
-                         num_iterations=60,
+                         num_iterations=30,
                          step_size=10.0)
