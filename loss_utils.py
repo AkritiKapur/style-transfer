@@ -23,10 +23,8 @@ def get_content_loss(model, content_image, layer_ids, mixed_net):
     :param mixed_image: Stylized image, image the loss is computed against.
     :return:
     """
-    content_images = tf.placeholder(tf.float32, shape=content_image.shape, name='content_images')
-
     # Pass content_images through 'pretrained VGG-19 network'
-    content_imgs_preprocess = preprocess(content_images)
+    content_imgs_preprocess = preprocess(content_image)
     content_net = model.forward(content_imgs_preprocess)
 
     layer_losses = []
@@ -63,7 +61,7 @@ def get_gram_matrix(t):
     return gram_matrix
 
 
-def get_style_loss(model, style_image, layer_ids, mixed_net):
+def get_style_loss(model, gram_layers_style, layer_ids, mixed_net):
     """
     :param session: Tensorflow session
     :param model: VGG model for example,
@@ -72,28 +70,18 @@ def get_style_loss(model, style_image, layer_ids, mixed_net):
                       Layers selected for optimizing content loss ~ Lower level layers!
     :return:
     """
-    style_shape = style_image.shape
-    # Create a placeholder for style image
-    style_image = tf.placeholder(tf.float32, shape=style_shape, name='style_image')
-
-    # pass style image through 'pretrained VGG-19 network'
-    style_img_preprocess = preprocess(style_image)
-    style_net = model.forward(style_img_preprocess)
-
-    # Extract gram matrices for style image, for each layer
-    gram_layers_style = [get_gram_matrix(style_net[layer]) for layer in layer_ids]
 
     # Extract gram matrices for mixed image, for each layer
-    gram_layers_mixed = [get_gram_matrix(mixed_net[layer]) for layer in layer_ids]
+    gram_layers_mixed = {layer: get_gram_matrix(mixed_net[layer]) for layer in layer_ids}
 
     layer_losses = []
 
     # Calculate loss between the mixed image and the style image gram matrices
-    for gram_style, gram_mixed in zip(gram_layers_style, gram_layers_mixed):
+    for layer in layer_ids:
 
         # value_const = tf.constant(value)
 
-        loss = mean_squared_error(gram_style, gram_mixed)
+        loss = mean_squared_error(gram_layers_style[layer], gram_layers_mixed[layer])
 
         layer_losses.append(loss)
 
