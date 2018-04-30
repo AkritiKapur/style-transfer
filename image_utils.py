@@ -1,9 +1,14 @@
 import numpy as np
 import PIL.Image
 import matplotlib.pyplot as plt
+from IPython.display import Image, display
 
 
 # Define Image Utils
+def get_numpy_image():
+    pass
+
+
 def get_image(filename, max_size=None):
     image = PIL.Image.open(filename)
 
@@ -25,7 +30,6 @@ def get_image(filename, max_size=None):
 
     # Convert to numpy floating-point array.
     return np.float32(image)
-
 
 def view_image(image):
     # Ensure the pixel-values are between 0 and 255.
