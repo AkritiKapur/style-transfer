@@ -4,7 +4,7 @@ import tensorflow as tf
 
 def get_weights(shape):
     # Random normal weights
-    return tf.Variable(tf.truncated_normal(shape, stddev=0.05))
+    return tf.Variable(tf.truncated_normal(shape, stddev=0.1))
 
 
 def get_bias(length):
@@ -33,8 +33,11 @@ def get_conv_layer(input, filter_height, filter_width, n_input_channels, n_chann
     # Add convolution layer
     # TODO: check padding..
     layer = tf.nn.conv2d(input=input, filter=weight, strides=stride, padding='SAME')
+    # tf.verify_tensor_all_finite(layer, msg="layer has an issue is it?")
 
     layer += bias
+
+    layer = batch_normalization(layer, n_channels)
 
     # Add a relu unit
     if relu:
@@ -68,6 +71,8 @@ def get_deconv_layer(input, filter_height, filter_width, n_output_channels, n_in
                                    strides=stride, padding='SAME')
 
     layer += bias
+
+    layer = batch_normalization(layer, n_output_channels[3])
 
     # Add a relu unit
     if relu:
@@ -116,6 +121,19 @@ def get_res_layer(conv, filter_width, filter_height, n_filters, n_input_channels
                    filter_height=filter_height, n_channels=n_filters,
                    n_input_channels=n_input_channels, relu=False)
 
-    layer = temp + layer
+    layer = conv + layer
 
     return layer
+
+
+def batch_normalization(x, num_filters):
+    epsilon = 1e-3
+
+    shape = [num_filters]
+    scale = tf.Variable(tf.ones(shape), name='scale')
+    shift = tf.Variable(tf.zeros(shape), name='shift')
+
+    mean, var = tf.nn.moments(x, [1, 2], keep_dims=True)
+    x_normed = tf.div(tf.subtract(x, mean), tf.sqrt(tf.add(var, epsilon)))
+
+    return scale * x_normed + shift
