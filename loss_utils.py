@@ -94,12 +94,12 @@ def get_style_loss(model, gram_layers_style, layer_ids, mixed_net):
     return total_loss
 
 
-def get_variational_loss(model):
+def get_variational_loss(mixed_image):
     # Supposed to make results better.
 
     # Calculates sum of the pixel values between the original and the shifted image
     # shifted image is shifted by one pixel on each axis.
-    loss = tf.reduce_sum(tf.abs(model.input[:, 1:, :, :] - model.input[:, :-1, :, :])) + \
-           tf.reduce_sum(tf.abs(model.input[:, :, 1:, :] - model.input[:, :, :-1, :]))
+    loss = tf.reduce_sum(tf.abs(mixed_image[:, 1:, :, :] - mixed_image[:, :-1, :, :])) + \
+           tf.reduce_sum(tf.abs(mixed_image[:, :, 1:, :] - mixed_image[:, :, :-1, :]))
 
     return loss

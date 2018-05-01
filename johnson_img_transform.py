@@ -5,9 +5,6 @@ from cnn_utils import get_conv_layer, get_res_layer, get_deconv_layer
 
 
 def image_transformation_network(content_image):
-    # Number input channels = 3 for RGB
-    h, w, p = content_image.shape
-    content_image = content_image.reshape((1, h, w, p))
     conv1, _ = get_conv_layer(content_image, filter_height=9, filter_width=9, n_channels=32, n_input_channels=3)
     conv2, _ = get_conv_layer(conv1, filter_height=3, filter_width=3, n_channels=64,
                               n_input_channels=32, stride=[1, 2, 2, 1])

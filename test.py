@@ -9,6 +9,8 @@ import time
 
 from cnn_utils import get_conv_layer, get_fc_layer
 from tensorflow.examples.tutorials.mnist import input_data
+from johnson_img_transform import image_transformation_network
+from image_utils import get_images, get_image, save_images
 
 filter_1 = 3
 num_filters_1 = 8
@@ -18,7 +20,6 @@ num_filters_2 = 12
 
 # Fully connected layer
 fc_size = 128
-
 
 
 def trial_conv():
@@ -132,5 +133,34 @@ def optimize(num_iterations, data, session, optimizer, x, y_true, accuracy):
     total_iterations += num_iterations
 
 
+def test_style_transfer():
+    checkpoints_file = 'checkpoints/model.ckpt-20'
+    content_file = 'images/willy_wonka_old.jpg'
+    save_path = 'stylized/'
+
+    content_tar = get_image(content_file, max_size=256)
+
+    with tf.Graph().as_default(), tf.Session() as sess:
+        # build the dataflow graph
+        content_image = tf.placeholder(tf.float32, shape=(1, None, None, 3), name='content_image')
+
+        output_image = image_transformation_network(content_image)
+
+        # restore the trained model and run the style transferring
+        saver = tf.train.Saver()
+        saver.restore(sess, checkpoints_file)
+
+        output = []
+
+        result = sess.run(output_image, feed_dict={content_image: content_tar})
+        output.append(result[0])
+
+    if save_path is not None:
+        save_images(content_tar, output, save_path, prefix=None, suffix=None)
+
+    return output
+
+
 if __name__ == '__main__':
-    trial_conv()
+    # trial_conv()
+    test_style_transfer()

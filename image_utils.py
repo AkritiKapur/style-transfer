@@ -3,6 +3,8 @@ import PIL.Image
 import matplotlib.pyplot as plt
 from IPython.display import Image, display
 from scipy.misc import imread, imsave, imresize
+from os import listdir, mkdir, sep
+from os.path import join, exists, splitext
 
 
 # Define Image Utils
@@ -108,3 +110,31 @@ def plot_images(content_image, style_image, mixed_image):
     # Ensure the plot is shown correctly with multiple plots
     # in a single Notebook cell.
     plt.show()
+
+
+def save_images(paths, datas, save_path, prefix=None, suffix=None):
+    if isinstance(paths, str):
+        paths = [paths]
+
+    assert (len(paths) == len(datas))
+
+    if not exists(save_path):
+        mkdir(save_path)
+
+    if prefix is None:
+        prefix = ''
+    if suffix is None:
+        suffix = ''
+
+    path = join(save_path, 'test')
+    imsave(path, datas[0])
+
+    # for i, path in enumerate(paths):
+    #     data = datas[i]
+    #
+    #     name, ext = splitext(path)
+    #     name = name.split(sep)[-1]
+    #
+    #     path = join(save_path, prefix + name + suffix + ext)
+    #
+    #     imsave(path, data)

@@ -7,6 +7,7 @@ from johnson_img_transform import image_transformation_network
 from vgg19 import VGG, preprocess
 
 VGG_PATH  = './imagenet-vgg-19-weights.npz'
+SAVE_PATH = 'checkpoints/model.ckpt'
 
 
 def get_np_gram(t):
@@ -85,14 +86,15 @@ def style_transfer(content_image, style_image,
                                     mixed_net=mixed_net)
 
         # Create the loss-function for the denoising of the mixed-image.
-        # loss_denoise = get_variational_loss(model)
+        loss_denoise = get_variational_loss(transformed_content)
 
         loss_combined = weight_content * loss_content + \
-                        weight_style * loss_style
-                        # weight_denoise * loss_denoise
+                        weight_style * loss_style + \
+                        weight_denoise * loss_denoise
 
         optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(loss_combined)
         sess.run(tf.global_variables_initializer())
+        saver = tf.train.Saver(keep_checkpoint_every_n_hours=1)
 
         for i in range(num_iterations):
 
@@ -100,6 +102,7 @@ def style_transfer(content_image, style_image,
 
             # Display status once every 10 iterations, and the last.
             if (i % 10 == 0) or (i == num_iterations - 1):
+                saver.save(sess, SAVE_PATH, global_step=i)
                 print()
                 print("Iteration:", i)
                 to_get = [loss_style, loss_content, loss_combined]
@@ -109,26 +112,6 @@ def style_transfer(content_image, style_image,
                 losses = (_loss_style, _loss_content, _loss_combined)
                 print(losses)
 
-                # Print adjustment weights for loss-functions.
-                # msg = "Weight Adj. for Content: {0:.2e}, Style: {1:.2e}, Denoise: {2:.2e}"
-                # print(msg.format(adj_content_val, adj_style_val, adj_denoise_val))
-
-                # in larger resolution
-                # Plot the content-, style- and mixed-images.
-                # plot_images(content_image=content_image,
-                #             style_image=style_image,
-                #             mixed_image=mixed_image)
-                # view_image(mixed_image)
-
-    # print()
-    # print("Final image:")
-    # view_image(mixed_image)
-    #
-    # # Close the TensorFlow session to release its resources.
-    # session.close()
-    #
-    # # Return the mixed-image.
-    # return mixed_image
     return True
 
 if __name__ == '__main__':
