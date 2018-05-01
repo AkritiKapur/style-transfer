@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from loss_utils import get_content_loss, get_style_loss, get_variational_loss, get_gram_matrix
-from image_utils import plot_images, view_image, get_numpy_image, get_image, get_images
+from image_utils import plot_images, view_image, get_numpy_image, get_image, get_images, list_images
 from johnson_img_transform import image_transformation_network
 from vgg19 import VGG, preprocess
 
@@ -67,8 +67,8 @@ def style_transfer(content_image, style_image,
     # compute perceptual losses
     with tf.Graph().as_default(), tf.Session() as sess:
         # Get content image by passing it through the transformation net
-        transformed_content = image_transformation_network(content_image=content_image)
         content = tf.placeholder(tf.float32, shape=content_image.shape, name='content_images')
+        transformed_content = image_transformation_network(content_image=content)
 
         # pass tranformed content through the model
         mixed_preprocess = preprocess(transformed_content)
@@ -122,8 +122,9 @@ if __name__ == '__main__':
     CONTENT_LAYER = ['relu4_2']
     STYLE_LAYERS = ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1']
 
-    content_filename = 'images/willy_wonka_old.jpg'
-    content_image = get_images(content_filename, 256, 256)
+    content_filename = 'data/test_content'
+    content_images = list_images(content_filename)
+    content_image = get_images(content_images, 256, 256)
 
     style_filename = 'images/styles/rain_princess.jpg'
     style_image = get_images(style_filename, 256, 256)
@@ -136,5 +137,5 @@ if __name__ == '__main__':
                          weight_content=1.5,
                          weight_style=10.0,
                          weight_denoise=0.3,
-                         num_iterations=100,
+                         num_iterations=60,
                          step_size=10.0)
