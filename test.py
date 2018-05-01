@@ -134,7 +134,8 @@ def optimize(num_iterations, data, session, optimizer, x, y_true, accuracy):
 
 
 def test_style_transfer():
-    checkpoints_file = 'checkpoints/model.ckpt-29'
+    checkpoint_n = 20
+    checkpoints_file = 'checkpoints/model.ckpt-{}'.format(checkpoint_n)
     content_file = 'images/willy_wonka_old.jpg'
     save_path = 'stylized/'
 
@@ -158,7 +159,7 @@ def test_style_transfer():
     view_image(output[0])
 
     if save_path is not None:
-        save_images(content_tar, output, save_path, prefix=None, suffix=None)
+        save_images(content_tar, output, save_path, prefix=checkpoint_n, suffix=None)
 
     return output
 
