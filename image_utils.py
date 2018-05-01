@@ -51,6 +51,7 @@ def get_images(paths, height=None, width=None):
         if height is not None and width is not None:
             image = imresize(image, [height, width], interp='nearest')
 
+        image = np.float32(image)
         images.append(image)
 
     images = np.stack(images, axis=0)
@@ -126,7 +127,7 @@ def save_images(paths, datas, save_path, prefix=None, suffix=None):
     if suffix is None:
         suffix = ''
 
-    path = join(save_path, 'test')
+    path = join(save_path, 'test.jpg')
     imsave(path, datas[0])
 
     # for i, path in enumerate(paths):

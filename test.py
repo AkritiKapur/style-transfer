@@ -10,7 +10,7 @@ import time
 from cnn_utils import get_conv_layer, get_fc_layer
 from tensorflow.examples.tutorials.mnist import input_data
 from johnson_img_transform import image_transformation_network
-from image_utils import get_images, get_image, save_images
+from image_utils import get_images, get_image, save_images, view_image
 
 filter_1 = 3
 num_filters_1 = 8
@@ -134,7 +134,7 @@ def optimize(num_iterations, data, session, optimizer, x, y_true, accuracy):
 
 
 def test_style_transfer():
-    checkpoints_file = 'checkpoints/model.ckpt-20'
+    checkpoints_file = 'checkpoints/model.ckpt-29'
     content_file = 'images/willy_wonka_old.jpg'
     save_path = 'stylized/'
 
@@ -154,6 +154,8 @@ def test_style_transfer():
 
         result = sess.run(output_image, feed_dict={content_image: content_tar})
         output.append(result[0])
+
+    view_image(output[0])
 
     if save_path is not None:
         save_images(content_tar, output, save_path, prefix=None, suffix=None)

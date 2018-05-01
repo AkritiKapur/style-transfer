@@ -6,6 +6,7 @@ from image_utils import plot_images, view_image, get_numpy_image, get_image, get
 from johnson_img_transform import image_transformation_network
 from vgg19 import VGG, preprocess
 
+
 VGG_PATH  = './imagenet-vgg-19-weights.npz'
 SAVE_PATH = 'checkpoints/model.ckpt'
 
@@ -92,13 +93,16 @@ def style_transfer(content_image, style_image,
                         weight_style * loss_style + \
                         weight_denoise * loss_denoise
 
-        optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(loss_combined)
+        optimizer = tf.train.AdamOptimizer(learning_rate=1e-3)
+        grads = optimizer.compute_gradients(loss_combined)
+        out = optimizer.apply_gradients(grads)
+
         sess.run(tf.global_variables_initializer())
         saver = tf.train.Saver(keep_checkpoint_every_n_hours=1)
 
         for i in range(num_iterations):
 
-            sess.run(optimizer, feed_dict={content: content_image})
+            sess.run(out, feed_dict={content: content_image})
 
             # Display status once every 10 iterations, and the last.
             if (i % 10 == 0) or (i == num_iterations - 1):
@@ -119,7 +123,7 @@ if __name__ == '__main__':
     STYLE_LAYERS = ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1']
 
     content_filename = 'images/willy_wonka_old.jpg'
-    content_image = get_image(content_filename, max_size=256)
+    content_image = get_images(content_filename, 256, 256)
 
     style_filename = 'images/styles/rain_princess.jpg'
     style_image = get_images(style_filename, 256, 256)
@@ -132,5 +136,5 @@ if __name__ == '__main__':
                          weight_content=1.5,
                          weight_style=10.0,
                          weight_denoise=0.3,
-                         num_iterations=30,
+                         num_iterations=100,
                          step_size=10.0)
