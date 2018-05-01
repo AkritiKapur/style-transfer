@@ -2,6 +2,7 @@ import numpy as np
 import PIL.Image
 import matplotlib.pyplot as plt
 from IPython.display import Image, display
+from scipy.misc import imread, imsave, imresize
 
 
 # Define Image Utils
@@ -28,8 +29,32 @@ def get_image(filename, max_size=None):
         # Resize the image.
         image = image.resize(size, PIL.Image.LANCZOS)
 
+    image = np.float32(image)
+
+    h, w, c = image.shape
+
+    image = image.reshape((1, h, w, c))
     # Convert to numpy floating-point array.
-    return np.float32(image)
+    return image
+
+
+def get_images(paths, height=None, width=None):
+    if isinstance(paths, str):
+        paths = [paths]
+
+    images = []
+    for path in paths:
+        image = imread(path, mode='RGB')
+
+        if height is not None and width is not None:
+            image = imresize(image, [height, width], interp='nearest')
+
+        images.append(image)
+
+    images = np.stack(images, axis=0)
+
+    return images
+
 
 def view_image(image):
     # Ensure the pixel-values are between 0 and 255.

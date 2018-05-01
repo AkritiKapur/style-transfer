@@ -11,6 +11,7 @@ def mean_squared_error(t1, t2):
     :param t2: second tensor
     :return: Mean squared error (Average of the squared errors)
     """
+    t = t1 - t2
     return tf.reduce_mean(tf.square(t1 - t2))
 
 
@@ -37,6 +38,7 @@ def get_content_loss(model, content_image, layer_ids, mixed_net):
     # Average loss across all layers.
     total_loss = tf.reduce_mean(layer_losses)
 
+    # print(total_loss.eval())
     return total_loss
 
 
@@ -79,9 +81,10 @@ def get_style_loss(model, gram_layers_style, layer_ids, mixed_net):
     # Calculate loss between the mixed image and the style image gram matrices
     for layer in layer_ids:
 
-        # value_const = tf.constant(value)
+        style = gram_layers_style[layer]
+        mixed = gram_layers_mixed[layer]
 
-        loss = mean_squared_error(gram_layers_style[layer], gram_layers_mixed[layer])
+        loss = mean_squared_error(style, mixed)
 
         layer_losses.append(loss)
 
