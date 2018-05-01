@@ -49,6 +49,7 @@ def get_images(paths, height=None, width=None):
         image = imread(path, mode='RGB')
 
         if height is not None and width is not None:
+            print("sdfkhhfds", path)
             image = imresize(image, [height, width], interp='nearest')
 
         image = np.float32(image)
@@ -127,7 +128,7 @@ def save_images(paths, datas, save_path, prefix=None, suffix=None):
     if suffix is None:
         suffix = ''
 
-    path = join(save_path, 'test.jpg')
+    path = join(save_path, 'test-{}.jpg'.format(prefix))
     imsave(path, datas[0])
 
     # for i, path in enumerate(paths):
@@ -139,3 +140,16 @@ def save_images(paths, datas, save_path, prefix=None, suffix=None):
     #     path = join(save_path, prefix + name + suffix + ext)
     #
     #     imsave(path, data)
+
+
+def list_images(directory):
+    images = []
+    for file in listdir(directory):
+        name = file.lower()
+        if name.endswith('.png'):
+            images.append(join(directory, file))
+        elif name.endswith('.jpg'):
+            images.append(join(directory, file))
+        elif name.endswith('.jpeg'):
+            images.append(join(directory, file))
+    return images
